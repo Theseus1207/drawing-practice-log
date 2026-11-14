@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>繪畫練習紀錄</title>
+<meta name="theme-color" content="#f7f5f0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="練習紀錄">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bg:#f7f5f0; --card:#fff; --ink:#23211d; --sub:#7a766d; --line:#e6e2d8; --acc:#d9785a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 -apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif; padding-bottom:env(safe-area-inset-bottom); }
+  header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:8px; padding:22px 28px 10px; padding-top:calc(22px + env(safe-area-inset-top)); }
+  h1 { margin:0; font-size:22px; font-weight:700; }
+  .sub { color:var(--sub); font-size:13px; }
+  main { padding:8px 28px 48px; max-width:1200px; margin:0 auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:16px; }
+  .card h2 { font-size:15px; margin:0 0 12px; font-weight:600; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:820px) { .grid2 { grid-template-columns:1fr; } header, main { padding-left:14px; padding-right:14px; } }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:16px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .sv { font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .sv small { font-size:13px; color:var(--sub); font-weight:400; margin-left:3px; }
+  .sl { color:var(--sub); font-size:12px; }
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; align-items:end; }
+  .form-grid label { display:flex; flex-direction:column; font-size:12px; color:var(--sub); gap:4px; }
+  input, select, textarea { font:inherit; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:8px; padding:7px 9px; min-width:0; }
+  button { font:inherit; border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 14px; cursor:pointer; }
+  button:hover { border-color:var(--acc); }
+  button.primary { background:var(--acc); border-color:var(--acc); color:#fff; }
+  button.primary:hover { filter:brightness(.95); }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  #save-note { color:var(--sub); font-size:12px; margin-left:auto; align-self:center; }
+  .heat-wrap { overflow-x:auto; }
+  .legend { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--sub); margin-top:8px; }
+  .legend i { width:12px; height:12px; border-radius:2px; display:inline-block; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal .h { text-align:center; font-size:11px; color:var(--sub); padding:2px 0; }
+  .cd { aspect-ratio:1/1; border-radius:8px; border:1px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; background:#fbfaf7; }
+  .cd.on { background:#f7d6c6; border-color:#f0a98b; }
+  .cd.today { outline:2px solid var(--acc); outline-offset:1px; }
+  .cd em { font-style:normal; font-size:10px; color:var(--ink); }
+  .cd.blank { background:transparent; border:none; }
+  .bar-row { display:grid; grid-template-columns:90px 1fr 46px; gap:8px; align-items:center; margin:6px 0; font-size:13px; }
+  .bar-track { background:#f1eee7; border-radius:6px; height:12px; overflow:hidden; }
+  .bar-fill { background:var(--acc); height:100%; border-radius:6px; }
+  .bar-row .n { text-align:right; color:var(--sub); font-variant-numeric:tabular-nums; }
+  .donut-wrap { display:flex; gap:18px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .legend-list div { display:flex; align-items:center; gap:6px; font-size:13px; margin:4px 0; }
+  .legend-list i { width:10px; height:10px; border-radius:3px; display:inline-block; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--sub); font-weight:500; font-size:12px; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .tag { display:inline-block; background:#f1eee7; border-radius:6px; padding:1px 7px; font-size:12px; }
+  .del { border:none; background:none; color:var(--sub); padding:0 6px; font-size:16px; }
+  .del:hover { color:#b5492a; }
+  .empty { color:var(--sub); text-align:center; padding:28px 0; }
+  textarea#dump { width:100%; height:80px; font:11px/1.4 monospace; color:var(--sub); resize:vertical; }
+  #restore-in { width:100%; height:70px; font:11px/1.4 monospace; resize:vertical; }
+  svg text { font-family:inherit; }
+  .weekly .wk-head { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px; margin-bottom:14px; border-bottom:1px dashed var(--line); padding-bottom:12px; }
+  .wk-title { font-size:18px; font-weight:700; }
+  .wk-nav button { padding:5px 10px; font-size:13px; }
+  .wk-nav button:disabled { opacity:.4; cursor:default; }
+  .wgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .wtile { background:#faf8f4; border:1px solid var(--line); border-radius:10px; padding:12px 14px; min-height:64px; }
+  .wtile.wide { grid-column:1/-1; }
+  .wl { font-size:12px; color:var(--sub); margin-bottom:4px; }
+  .wb { font-size:14px; line-height:1.6; }
+  .wb b { font-size:20px; font-variant-numeric:tabular-nums; }
+  .delta { margin-left:8px; font-size:12px; }
+  .delta.up { color:#4f8a5b; }
+  .delta.down { color:#b5492a; }
+  .badge { display:inline-block; background:#f7d6c6; border-radius:999px; padding:2px 10px; margin:2px 6px 2px 0; font-size:13px; }
+  .wsum, .wnote { margin-top:14px; }
+  .wsum p { margin:4px 0 0; line-height:1.8; font-size:14px; }
+  #wk-note { width:100%; resize:vertical; }
+  @media (max-width:820px) { .wgrid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>繪畫練習紀錄</h1>
+    <div class="sub" id="today-label"></div>
+  </div>
+  <div class="sub" id="streak-label"></div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>新增練習紀錄</h2>
+    <div class="form-grid">
+      <label>日期<input type="date" id="f-date"></label>
+      <label>類別<input id="f-cat" list="cats-list" placeholder="例如：人物"></label>
+      <label>項目<input id="f-item" list="items-list" placeholder="例如：手部"></label>
+      <label>數量（張／件）<input type="number" id="f-count" min="1" value="1"></label>
+      <label>時間（分鐘）<input type="number" id="f-min" min="0" placeholder="選填"></label>
+      <label>備註<input id="f-note" placeholder="選填"></label>
+    </div>
+    <datalist id="cats-list"></datalist>
+    <datalist id="items-list"></datalist>
+    <div class="actions">
+      <button class="primary" id="f-add">新增紀錄</button>
+      <button id="f-checkin">今天打卡</button>
+      <span id="save-note"></span>
+    </div>
+  </section>
+
+  <div id="app"></div>
+
+  <section class="card">
+    <h2>資料備份</h2>
+    <p class="sub" style="margin:0 0 8px">以下是恢復碼，複製保存後，之後貼到下方就能還原全部紀錄。</p>
+    <textarea id="dump" readonly placeholder="產生中…"></textarea>
+    <div class="actions"><button id="copy">複製恢復碼</button></div>
+    <h2 style="margin-top:18px">用恢復碼還原</h2>
+    <textarea id="restore-in" placeholder="貼上恢復碼"></textarea>
+    <div class="actions"><button id="restore-btn">還原</button></div>
+    <div class="actions">
+      <button id="demo">載入示範資料</button>
+      <button id="clear">清空全部</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  const STORE_KEY = 'drawing-practice-log-v1';
+  const DEFAULT_CATS = ['人物','靜物','透視','速寫','色彩'];
+  const $ = s => document.querySelector(s);
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+  const DAY = 86400000;
+  const todayStr = ymd(new Date());
+  const HEAT = ['#eeeae0','#f7d6c6','#f0a98b','#e07a55','#b5492a'];
+  const PALETTE = ['#d9785a','#e5b25d','#7fa98c','#6f8fb5','#a58bb8','#c9a88a','#8aa6a3','#c77d9b'];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ---------- state (stored on this device) ----------
+  let state = null;
+  try { state = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { state = null; }
+  if (!state || !Array.isArray(state.entries)) state = { entries:[], checkins:[], cats:DEFAULT_CATS.slice(), notes:{} };
+  state.checkins = state.checkins || [];
+  state.cats = state.cats || DEFAULT_CATS.slice();
+  state.notes = state.notes || {};
+
+  function setSaveNote(t) { $('#save-note').textContent = t; }
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      setSaveNote('已儲存在這台裝置');
+    } catch (e) {
+      setSaveNote('無法儲存到這台裝置，請先備份恢復碼');
+    }
+  }
+  function commit() { render(); save(); }
+
+  // ---------- recovery code ----------
+  const toB64u = bytes => { let s = ''; bytes.forEach(b => { s += String.fromCharCode(b); }); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  const fromB64u = str => { const s = atob(str.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(str.length / 4) * 4, '=')); return Uint8Array.from(s, c => c.charCodeAt(0)); };
+  async function encodeCode(obj) {
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    if (window.CompressionStream) {
+      const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate'));
+      return 'Z1-' + toB64u(new Uint8Array(await new Response(stream).arrayBuffer()));
+    }
+    return 'P1-' + toB64u(bytes);
+  }
+  async function decodeCode(code) {
+    const tag = code.slice(0, 3), raw = fromB64u(code.slice(3));
+    if (tag === 'Z1-') {
+      const stream = new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate'));
+      return JSON.parse(await new Response(stream).text());
+    }
+    if (tag === 'P1-') return JSON.parse(new TextDecoder().decode(raw));
+    throw new Error('unknown code');
+  }
+
+  // ---------- derived data ----------
+  function dayCounts() {
+    const m = {};
+    state.entries.forEach(e => { m[e.date] = (m[e.date] || 0) + (+e.count || 0); });
+    return m;
+  }
+  function activeSet() {
+    const s = new Set(state.checkins);
+    state.entries.forEach(e => s.add(e.date));
+    return s;
+  }
+  function streaks(act) {
+    const days = [...act].sort();
+    let longest = 0, run = 0, prev = null;
+    days.forEach(d => {
+      const cur = parse(d);
+      run = (prev && (cur - prev) === DAY) ? run + 1 : 1;
+      longest = Math.max(longest, run);
+      prev = cur;
+    });
+    let cur = 0;
+    let d = parse(todayStr);
+    if (!act.has(todayStr)) d = new Date(d - DAY);
+    while (act.has(ymd(d))) { cur++; d = new Date(d - DAY); }
+    return { cur, longest };
+  }
+
+  // ---------- SVG builders ----------
+  function heatSVG(counts) {
+    const today = parse(todayStr);
+    const start = new Date(today - 364 * DAY);
+    start.setDate(start.getDate() - start.getDay());
+    const max = Math.max(1, ...Object.values(counts));
+    const weeks = Math.floor(Math.round((today - start) / DAY) / 7) + 1;
+    let cells = '';
+    for (let d = new Date(start); d <= today; d = new Date(d.getTime() + DAY)) {
+      const col = Math.floor(Math.round((d - start) / DAY) / 7);
+      const row = d.getDay();
+      const k = ymd(d), c = counts[k] || 0;
+      const lv = c === 0 ? 0 : Math.min(4, Math.ceil(c / max * 4));
+      cells += `<rect x="${col*15}" y="${row*15}" width="12" height="12" rx="2" fill="${HEAT[lv]}"><title>${k}：${c} 件</title></rect>`;
+    }
+    return `<div class="heat-wrap"><svg width="${weeks*15}" height="${7*15}" viewBox="0 0 ${weeks*15} ${7*15}">${cells}</svg></div>
+      <div class="legend">少 ${HEAT.map(c => `<i style="background:${c}"></i>`).join('')} 多</div>`;
+  }
+
+  function lineSVG(counts) {
+    const n = 30, vals = [], labels = [];
+    const today = parse(todayStr);
+    for (let i = n-1; i >= 0; i--) {
+      const d = new Date(today - i*DAY); const k = ymd(d);
+      vals.push(counts[k] || 0); labels.push(k.slice(5));
+    }
+    const W = 560, H = 180, P = 26;
+    const max = Math.max(1, ...vals);
+    const x = i => P + i*(W-2*P)/(n-1);
+    const y = v => H-P - v/max*(H-2*P);
+    const pts = vals.map((v,i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    let grid = '';
+    [0, 0.5, 1].forEach(f => {
+      const yy = H-P - f*(H-2*P);
+      grid += `<line x1="${P}" x2="${W-P}" y1="${yy}" y2="${yy}" stroke="#e6e2d8"/>`;
+      grid += `<text x="${P-6}" y="${yy+4}" font-size="10" text-anchor="end" fill="#7a766d">${Math.round(max*f)}</text>`;
+    });
+    let xl = '';
+    labels.forEach((l,i) => { if (i % 5 === 0 || i === n-1) xl += `<text x="${x(i)}" y="${H-6}" font-size="10" text-anchor="middle" fill="#7a766d">${l}</text>`; });
+    const dots = vals.map((v,i) => v ? `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="#d9785a"><title>${labels[i]}：${v} 件</title></circle>` : '').join('');
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%">${grid}
+      <path d="M${x(0)},${H-P} L${pts} L${x(n-1)},${H-P} Z" fill="#f7d6c6" opacity=".7"/>
+      <polyline points="${pts}" fill="none" stroke="#d9785a" stroke-width="2"/>${dots}${xl}</svg>`;
+  }
+
+  function barsHTML(entries) {
+    const agg = {};
+    entries.forEach(e => { agg[e.item] = (agg[e.item] || 0) + (+e.count || 0); });
+    const rows = Object.entries(agg).sort((a,b) => b[1]-a[1]).slice(0, 12);
+    if (!rows.length) return '<div class="empty">還沒有紀錄</div>';
+    const max = rows[0][1];
+    return rows.map(([k,v]) => `<div class="bar-row"><span>${esc(k)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${v/max*100}%"></div></div>
+      <span class="n">${v}</span></div>`).join('');
+  }
+
+  function donutHTML(entries) {
+    const agg = {};
+    entries.forEach(e => { agg[e.cat || '未分類'] = (agg[e.cat || '未分類'] || 0) + (+e.count || 0); });
+    const rows = Object.entries(agg).sort((a,b) => b[1]-a[1]);
+    const total = rows.reduce((s,r) => s + r[1], 0);
+    if (!total) return '<div class="empty">還沒有紀錄</div>';
+    const C = 2*Math.PI*60; let off = 0;
+    const arcs = rows.map(([k,v],i) => {
+      const len = v/total*C;
+      const s = `<circle cx="80" cy="80" r="60" fill="none" stroke="${PALETTE[i%PALETTE.length]}" stroke-width="22" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`;
+      off += len; return s;
+    }).join('');
+    const legend = rows.map(([k,v],i) => `<div><i style="background:${PALETTE[i%PALETTE.length]}"></i>${esc(k)}：${v} 件（${Math.round(v/total*100)}%）</div>`).join('');
+    return `<div class="donut-wrap"><svg width="160" height="160" viewBox="0 0 160 160">${arcs}
+      <text x="80" y="78" text-anchor="middle" font-size="22" font-weight="700" fill="#23211d">${rows.reduce((s,r)=>s+r[1],0)}</text>
+      <text x="80" y="96" text-anchor="middle" font-size="11" fill="#7a766d">總件數</text></svg>
+      <div class="legend-list">${legend}</div></div>`;
+  }
+
+  function calendarHTML(act, counts) {
+    const now = parse(todayStr);
+    const y = now.getFullYear(), m = now.getMonth();
+    const first = new Date(y, m, 1).getDay();
+    const days = new Date(y, m+1, 0).getDate();
+    let h = ['日','一','二','三','四','五','六'].map(w => `<div class="h">${w}</div>`).join('');
+    for (let i = 0; i < first; i++) h += `<div class="cd blank"></div>`;
+    for (let d = 1; d <= days; d++) {
+      const k = ymd(new Date(y, m, d));
+      const c = counts[k] || 0;
+      h += `<div class="cd ${act.has(k) ? 'on' : ''} ${k === todayStr ? 'today' : ''}"><span>${d}</span>${c ? `<em>${c}</em>` : ''}</div>`;
+    }
+    return `<div class="cal">${h}</div>`;
+  }
+
+  // ---------- weekly summary ----------
+  const TIER = [[0,'【未覺醒】尚未啟程的玩家'],[1,'【新手村】見習小畫師'],[10,'【成長期】練習生'],[25,'【修練中】鉛筆修行者'],[50,'【大師級】硬核畫師']];
+  const ITEM_TITLE = { '手部':'【手型解析】掌中萬象','頭像':'【五官獵手】臉部專精','全身比例':'【黃金比例】比例匠','衣褶':'【褶皺感知】布料觀察者','靜物球體':'【明暗探索】光影行者','透視方盒':'【空間構築】透視師','速寫動態':'【瞬間捕捉】動態獵人','膚色混色':'【色彩調律】混色煉金師' };
+  const RULES = ['【攻略】每天十分鐘的練習，就是最穩定的經驗來源。','【攻略】把大任務拆成小關卡，單一手勢也算通關。','【攻略】速寫是開局的必經熱身，跳過會損失屬性加成。','【攻略】失敗是升級的素材，翻頁重來即可。','【攻略】狀態低落時回到基礎形體，手感會慢慢回血。','【攻略】記錄是存檔點，寫下今天的進度，明天才能續關。'];
+  const SYS = ['【系統公告】產量突破門檻，獲得「產量爆發」加成。','【系統公告】連續簽到觸發「穩定輸出」狀態。','【系統公告】經驗持續累積中，努力已寫入存檔。','【系統公告】本週經驗值偏低，但每次行動都已計入。','【系統公告】偵測到出擊次數增加，請保持節奏。'];
+  function addDays(s, n) { const d = parse(s); d.setDate(d.getDate() + n); return ymd(d); }
+  function weekStartOf(s) { const d = parse(s); d.setDate(d.getDate() - d.getDay()); return ymd(d); }
+  function weekSummary(ws) {
+    const we = addDays(ws, 6), pws = addDays(ws, -7);
+    const es = state.entries.filter(e => e.date >= ws && e.date <= we);
+    const prev = state.entries.filter(e => e.date >= pws && e.date < ws);
+    const sum = arr => arr.reduce((s, e) => s + (+e.count || 0), 0);
+    const count = sum(es), prevCount = sum(prev);
+    const mins = es.reduce((s, e) => s + (+e.min || 0), 0);
+    const days = new Set([...es.map(e => e.date), ...state.checkins.filter(d => d >= ws && d <= we)]);
+    const itemAgg = {}; es.forEach(e => { itemAgg[e.item] = (itemAgg[e.item] || 0) + (+e.count || 0); });
+    const items = Object.entries(itemAgg).sort((a, b) => b[1] - a[1]);
+    const cats = [...new Set(es.map(e => e.cat || '未分類'))];
+    const before = new Set(state.entries.filter(e => e.date < ws).map(e => e.item));
+    const newItems = [...new Set(es.map(e => e.item))].filter(i => !before.has(i));
+    const dayAgg = {}; es.forEach(e => { dayAgg[e.date] = (dayAgg[e.date] || 0) + (+e.count || 0); });
+    const best = Object.entries(dayAgg).sort((a, b) => b[1] - a[1])[0];
+    return { ws, we, count, prevCount, mins, days: days.size, items, cats, newItems, best };
+  }
+  function weeklyHTML() {
+    const cw = weekStartOf(todayStr);
+    const ws = (state.view && state.view.week) || cw;
+    const s = weekSummary(ws);
+    const firstDate = state.entries.length ? state.entries.map(e => e.date).sort()[0] : ws;
+    const n = Math.max(1, Math.floor((parse(ws) - parse(weekStartOf(firstDate))) / (7 * DAY)) + 1);
+    const tier = [...TIER].reverse().find(([t]) => s.count >= t)[1];
+    const top = s.items[0];
+    const mainTitle = top ? (ITEM_TITLE[top[0]] || '全能練習生') : '尚無主修';
+    const achv = [];
+    if (s.days >= 7) achv.push('成就解鎖：七日連擊'); else if (s.days >= 5) achv.push('成就解鎖：規律修行');
+    if (s.count >= 20) achv.push('成就解鎖：產量爆發');
+    if (s.mins >= 300) achv.push('成就解鎖：專注達人');
+    if (s.newItems.length) achv.push('新技能習得：' + s.newItems.slice(0, 2).join('、'));
+    if (s.cats.length >= 3) achv.push('成就解鎖：多元探索');
+    if (s.count && s.count > s.prevCount) achv.push('成就解鎖：突破自我');
+    const rule = RULES[n % RULES.length];
+    const sys = s.count >= 20 ? SYS[0] : s.days >= 5 ? SYS[1] : s.days >= 3 ? SYS[2] : s.count ? SYS[3] : SYS[4];
+    const missing = state.cats.filter(c => !s.cats.includes(c));
+    const suggest = missing.length ? `「${missing[0]}」類別` : '新的技能樹';
+    let summary;
+    if (!s.count) summary = '【未開始】本週尚無出擊紀錄。角色仍在新手村待命，下一關從一張速寫開始即可。';
+    else {
+      summary = `【結算】本週累計 ${s.count} 件經驗，簽到 ${s.days} 次${s.mins ? `，累計約 ${(s.mins / 60).toFixed(1)} 小時` : ''}。主修屬性集中在「${top[0]}」，` +
+        (s.days >= 5 ? '達成「穩定輸出」狀態，這種節奏最難得。' : s.days >= 3 ? '中途有幾次斷線，但每次回歸都有成長。' : '簽到次數偏少，但單次出擊的火力很集中。');
+      if (s.best) summary += ` 單日最高紀錄在 ${s.best[0].slice(5)}，一次完成 ${s.best[1]} 件。`;
+      if (s.prevCount) summary += s.count > s.prevCount ? ` 較上週提升 ${s.count - s.prevCount} 點經驗，成長曲線向上。` : s.count < s.prevCount ? ` 較上週下降 ${s.prevCount - s.count} 點經驗，建議檢視是哪一關卡住了。` : ' 與上週經驗持平。';
+      summary += ` 下一關建議補強${suggest}，解鎖更多屬性。`;
+    }
+    const note = (state.notes && state.notes[ws]) || '';
+    const tile = (icon, label, body, cls = '') => `<div class="wtile ${cls}"><div class="wl"><span>${icon}</span> ${label}</div><div class="wb">${body}</div></div>`;
+    const diff = s.prevCount ? (s.count - s.prevCount) : null;
+    return `<section class="card weekly">
+      <div class="wk-head">
+        <div><div class="wk-title">第 ${n} 週結算</div><div class="sub">${ws.slice(5).replace('-', '/')} ～ ${s.we.slice(5).replace('-', '/')}</div></div>
+        <div class="wk-nav">
+          <button data-week="prev">◀ 上一週</button>
+          <button data-week="cur" ${ws === cw ? 'disabled' : ''}>本週</button>
+          <button data-week="next" ${ws >= cw ? 'disabled' : ''}>下一週 ▶</button>
+        </div>
+      </div>
+      <div class="wgrid">
+        ${tile('◆', '本週經驗值', `<b>${s.count}</b> 件${diff !== null ? `<span class="delta ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff)}（較上週）</span>` : ''}`)}
+        ${tile('★', '當前稱號', tier)}
+        ${tile('✎', '簽到次數', `<b>${s.days}</b> / 7 天`)}
+        ${tile('⛁', '主修職業', `${mainTitle}${top ? `<span class="sub">（${esc(top[0])} ${top[1]} 件）</span>` : ''}`)}
+        ${tile('✦', '解鎖成就', achv.length ? achv.map(a => `<span class="badge">${esc(a)}</span>`).join('') : '<span class="sub">成就尚未解鎖，下一週繼續挑戰</span>', 'wide')}
+        ${tile('◎', '單日最高紀錄', s.best ? `${s.best[0].slice(5).replace('-', '/')}，完成 ${s.best[1]} 件` : '<span class="sub">—</span>')}
+        ${tile('♦', '攻略提示', esc(rule), 'wide')}
+        ${tile('☆', '系統旁白', esc(sys), 'wide')}
+      </div>
+      <div class="wsum"><div class="wl">結算報告</div><p>${esc(summary)}</p></div>
+      <div class="wnote"><div class="wl">玩家筆記（可自行補充）</div>
+        <textarea id="wk-note" rows="3" placeholder="寫下這週的感想、卡關的地方或想記住的事…">${esc(note)}</textarea>
+        <div class="actions"><button data-savenote="1">儲存週記</button></div></div>
+    </section>`;
+  }
+
+  // ---------- render ----------
+  function render() {
+    const counts = dayCounts();
+    const act = activeSet();
+    const { cur, longest } = streaks(act);
+    const total = state.entries.reduce((s,e) => s + (+e.count || 0), 0);
+    const mins = state.entries.reduce((s,e) => s + (+e.min || 0), 0);
+    const monthPrefix = todayStr.slice(0,7);
+    const monthCount = state.entries.filter(e => e.date.startsWith(monthPrefix)).reduce((s,e) => s + (+e.count || 0), 0);
+    const todayDone = state.checkins.includes(todayStr);
+
+    const stat = (label, v, unit='') => `<div class="stat"><div class="sv">${v}<small>${unit}</small></div><div class="sl">${label}</div></div>`;
+    const recent = [...state.entries].sort((a,b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : (b.id > a.id ? 1 : -1))).slice(0, 40);
+    const rows = recent.map(e => `<tr>
+        <td>${e.date.slice(5)}</td>
+        <td><span class="tag">${esc(e.cat || '未分類')}</span></td>
+        <td>${esc(e.item)}</td>
+        <td class="num">${e.count}</td>
+        <td class="num">${e.min ? e.min : '—'}</td>
+        <td>${esc(e.note)}</td>
+        <td><button class="del" data-del="${esc(e.id)}" title="刪除">×</button></td></tr>`).join('');
+
+    $('#app').innerHTML = `
+      <div class="stats">
+        ${stat('總練習件數', total, '件')}
+        ${stat('累計時間', (mins/60).toFixed(1), '小時')}
+        ${stat('打卡天數', act.size, '天')}
+        ${stat('目前連續', cur, '天')}
+        ${stat('最長連續', longest, '天')}
+        ${stat('本月件數', monthCount, '件')}
+      </div>
+
+      ${weeklyHTML()}
+
+      <section class="card"><h2>一年練習熱度</h2>${heatSVG(counts)}</section>
+
+      <div class="grid2">
+        <section class="card"><h2>${parse(todayStr).getMonth()+1} 月打卡日曆</h2>${calendarHTML(act, counts)}</section>
+        <section class="card"><h2>最近 30 天每日件數</h2>${lineSVG(counts)}</section>
+      </div>
+
+      <div class="grid2">
+        <section class="card"><h2>項目排行</h2>${barsHTML(state.entries)}</section>
+        <section class="card"><h2>類別分布</h2>${donutHTML(state.entries)}</section>
+      </div>
+
+      <section class="card"><h2>最近紀錄</h2>
+        ${recent.length ? `<div style="overflow-x:auto"><table>
+          <thead><tr><th>日期</th><th>類別</th><th>項目</th><th class="num">件數</th><th class="num">分鐘</th><th>備註</th><th></th></tr></thead>
+          <tbody>${rows}</tbody></table></div>` : '<div class="empty">還沒有紀錄，從上方新增第一筆吧</div>'}
+      </section>`;
+
+    $('#today-label').textContent = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+    $('#streak-label').textContent = todayDone ? '今天已打卡 ✓' : '今天尚未打卡';
+    $('#f-checkin').textContent = todayDone ? '取消今天打卡' : '今天打卡';
+    $('#cats-list').innerHTML = state.cats.map(c => `<option value="${esc(c)}">`).join('');
+    const items = [...new Set(state.entries.map(e => e.item).filter(Boolean))];
+    $('#items-list').innerHTML = items.map(i => `<option value="${esc(i)}">`).join('');
+    encodeCode(state).then(c => { $('#dump').value = c; });
+  }
+
+  // ---------- actions ----------
+  document.addEventListener('click', e => {
+    const del = e.target.closest('[data-del]');
+    if (del) {
+      state.entries = state.entries.filter(x => x.id !== del.dataset.del);
+      commit();
+      return;
+    }
+    const nav = e.target.closest('[data-week]');
+    if (nav) {
+      const cw = weekStartOf(todayStr);
+      const base = (state.view && state.view.week) || cw;
+      let w = nav.dataset.week === 'prev' ? addDays(base, -7) : nav.dataset.week === 'next' ? addDays(base, 7) : cw;
+      if (w > cw) w = cw;
+      state.view = state.view || {};
+      if (w === cw) delete state.view.week; else state.view.week = w;
+      commit();
+      return;
+    }
+    if (e.target.closest('[data-savenote]')) {
+      const ws = (state.view && state.view.week) || weekStartOf(todayStr);
+      state.notes[ws] = document.getElementById('wk-note').value;
+      commit();
+      return;
+    }
+    if (e.target.id === 'copy') {
+      const d = $('#dump'); d.select();
+      try { navigator.clipboard.writeText(d.value).catch(() => {}); } catch (err) {}
+      setSaveNote('恢復碼已複製（若未成功，請手動全選複製）');
+    }
+  });
+
+  $('#f-date').value = todayStr;
+
+  $('#f-add').addEventListener('click', () => {
+    const item = $('#f-item').value.trim();
+    const count = Math.max(1, parseInt($('#f-count').value, 10) || 1);
+    if (!item) { setSaveNote('請先填寫項目'); return; }
+    const cat = $('#f-cat').value.trim() || '未分類';
+    if (cat !== '未分類' && !state.cats.includes(cat)) state.cats.push(cat);
+    state.entries.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+      date: $('#f-date').value || todayStr,
+      cat, item, count,
+      min: parseInt($('#f-min').value, 10) || 0,
+      note: $('#f-note').value.trim()
+    });
+    $('#f-item').value = ''; $('#f-note').value = ''; $('#f-min').value = ''; $('#f-count').value = '1';
+    commit();
+  });
+
+  $('#f-checkin').addEventListener('click', () => {
+    const i = state.checkins.indexOf(todayStr);
+    if (i >= 0) state.checkins.splice(i, 1); else state.checkins.push(todayStr);
+    commit();
+  });
+
+  document.addEventListener('click', async e => {
+    if (e.target.id !== 'restore-btn') return;
+    const btn = e.target;
+    const code = $('#restore-in').value.trim();
+    if (!code) { setSaveNote('請先貼上恢復碼'); return; }
+    if (!btn.dataset.armed) {
+      btn.dataset.armed = '1'; btn.textContent = '再按一次確認覆蓋';
+      setTimeout(() => { delete btn.dataset.armed; btn.textContent = '還原'; }, 4000);
+      return;
+    }
+    delete btn.dataset.armed; btn.textContent = '還原';
+    try {
+      const obj = await decodeCode(code);
+      if (!obj || !Array.isArray(obj.entries)) throw new Error('bad format');
+      obj.checkins = obj.checkins || []; obj.cats = obj.cats || DEFAULT_CATS.slice(); obj.notes = obj.notes || {};
+      state = obj;
+      commit();
+      $('#restore-in').value = '';
+    } catch (err) {
+      setSaveNote('恢復碼無效，請確認是否完整複製');
+    }
+  });
+
+  const ITEM_CAT = { '手部':'人物','頭像':'人物','全身比例':'人物','衣褶':'人物','靜物球體':'靜物','透視方盒':'透視','速寫動態':'速寫','膚色混色':'色彩' };
+  const ITEM_KEYS = Object.keys(ITEM_CAT);
+  $('#demo').addEventListener('click', () => {
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const entries = [], checkins = [];
+    const today = parse(todayStr);
+    for (let i = 90; i >= 0; i--) {
+      if (rnd() < 0.35) continue;
+      const k = ymd(new Date(today - i*DAY));
+      checkins.push(k);
+      const n = 1 + Math.floor(rnd()*3);
+      for (let j = 0; j < n; j++) {
+        const item = ITEM_KEYS[Math.floor(rnd()*ITEM_KEYS.length)];
+        entries.push({ id: k + '-' + j, date: k, cat: ITEM_CAT[item], item,
+          count: 1 + Math.floor(rnd()*4), min: 15 + Math.floor(rnd()*6)*10, note: '' });
+      }
+    }
+    state = { entries, checkins, cats: DEFAULT_CATS.slice(), notes: {} };
+    commit();
+  });
+
+  let clearArmed = false;
+  $('#clear').addEventListener('click', () => {
+    const btn = $('#clear');
+    if (!clearArmed) { clearArmed = true; btn.textContent = '再按一次確認清空'; setTimeout(() => { clearArmed = false; btn.textContent = '清空全部'; }, 4000); return; }
+    state = { entries:[], checkins:[], cats:DEFAULT_CATS.slice(), notes:{} };
+    clearArmed = false; btn.textContent = '清空全部';
+    commit();
+  });
+
+  // remember the entry-form values across re-renders is unnecessary: the form sits outside #app
+  render();
+  save();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  }
+})();
+</script>
+</body>
+</html>
